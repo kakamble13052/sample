@@ -1,0 +1,10 @@
+<%= form_for @comment, url: article_path(@article) do |f| %>
+    <p>
+      <%= f.label :comment%>
+      <%= f.text_area :comment%>
+    </p>
+
+    <p>
+      <%= f.submit%>
+    </p>
+<% end %>

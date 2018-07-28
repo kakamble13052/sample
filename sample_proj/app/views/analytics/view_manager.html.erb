@@ -1,0 +1,223 @@
+<script>
+    $(document).ready(function(){
+        Highcharts.setOptions({
+            global: {
+                timezone: 'Asia/Kolkata'
+            }
+        });
+        new Highcharts.chart('assigned_tasks', {
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Assigned Tasks'
+            },
+            xAxis: [{
+                type: 'datetime',
+                minRange: 1 * 5
+            }],
+            yAxis: [{
+                min: 0,
+                minTickInterval: 1,
+                title: {
+                    text: 'Tasks'
+                }
+            }],
+            tooltip: {
+                pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
+            },
+            plotOptions: {
+                series: {
+                    dataLabels: {
+                        enabled: 'true'
+                    },
+                    stacking: 'normal'
+                }
+            },
+            series: [{ pointInterval: 30 * 24 * 3600 * 1000,
+                pointStart: <%= 9.months.ago.to_date %>, },
+                <% @manager = Manager.find_by_username current_user.username %>
+                <% @months = (9.months.ago.to_date..Date.today).map{|date| date.strftime("%m")}.uniq %>
+                <% i = 0 %>
+                <% @users = @manager.users %>
+                <% @users.each do |user| %>
+                {
+                    name: '<%= user.username %>',
+                    data: [
+                        <% @months.each do |month| %>
+                        {
+                            name: '<%= month %>',
+                            x: <%= Date::MONTHNAMES[month.to_i].to_date.strftime('%Q') %>,
+                            y: <%= Task.total_assigned_to_user_by_manager(@manager, user, month) %>,
+                        }<% if month != @months.last %>, <% end %>
+                        <% end %>
+                    ]
+                }<% if user != @users.last! %>, <% end %>
+                <% i = i + 1 %>
+                <% end %>
+            ]
+        });
+
+        new Highcharts.chart('ongoing_tasks', {
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Ongoing Tasks'
+            },
+            xAxis: [{
+                type: 'datetime',
+                minRange: 1 * 5
+            }],
+            yAxis: [{
+                min: 0,
+                minTickInterval: 1,
+                title: {
+                    text: 'Tasks'
+                }
+            }],
+            tooltip: {
+                pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
+            },
+            plotOptions: {
+                series: {
+                    dataLabels: {
+                        enabled: 'true'
+                    },
+                    stacking: 'normal'
+                }
+            },
+            series: [{ pointInterval: 30 * 24 * 3600 * 1000,
+                pointStart: <%= 9.months.ago.to_date %>, },
+                <% @manager = Manager.find_by_username current_user.username %>
+                <% @months = (9.months.ago.to_date..Date.today).map{|date| date.strftime("%m")}.uniq %>
+                <% i = 0 %>
+                <% @users = @manager.users %>
+                <% @users.each do |user| %>
+                {
+                    name: '<%= user.username %>',
+                    data: [
+                        <% @months.each do |month| %>
+                        {
+                            name: '<%= month %>',
+                            x: <%= Date::MONTHNAMES[month.to_i].to_date.strftime('%Q') %>,
+                            y: <%= Task.total_ongoing_by_user_manager(@manager, user, month) %>,
+                        }<% if month != @months.last %>, <% end %>
+                        <% end %>
+                    ]
+                }<% if user != @users.last! %>, <% end %>
+                <% i = i + 1 %>
+                <% end %>
+            ]
+        });
+
+        new Highcharts.chart('completed_tasks', {
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Completed Tasks'
+            },
+            xAxis: [{
+                type: 'datetime',
+                minRange: 1 * 5
+            }],
+            yAxis: [{
+                tickInterval: 0,
+                minTickInterval: 1,
+                title: {
+                    text: 'Tasks'
+                }
+            }],
+            tooltip: {
+                pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
+            },
+            plotOptions: {
+                series: {
+                    dataLabels: {
+                        enabled: 'true'
+                    },
+                    stacking: 'normal'
+                }
+            },
+            series: [{ pointInterval: 30 * 24 * 3600 * 1000,
+                pointStart: <%= 9.months.ago.to_date %>, },
+                <% @manager = Manager.find_by_username current_user.username %>
+                <% @months = (9.months.ago.to_date..Date.today).map{|date| date.strftime("%m")}.uniq %>
+                <% i = 0 %>
+                <% @users = @manager.users %>
+                <% @users.each do |user| %>
+                {
+                    name: '<%= user.username %>',
+                    data: [
+                        <% @months.each do |month| %>
+                        {
+                            name: '<%= month %>',
+                            x: <%= Date::MONTHNAMES[month.to_i].to_date.strftime('%Q') %>,
+                            y: <%= Task.total_completed_by_user_manager(@manager, user, month) %>,
+                        }<% if month != @months.last %>, <% end %>
+                        <% end %>
+                    ]
+                }<% if user != @users.last! %>, <% end %>
+                <% i = i + 1 %>
+                <% end %>
+            ]
+        });
+
+        new Highcharts.chart('expired_tasks', {
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Expired Tasks'
+            },
+            xAxis: [{
+                type: 'datetime',
+                minRange: 1 * 5
+            }],
+            yAxis: [{
+                min: 0,
+                title: {
+                    text: 'Tasks'
+                }
+            }],
+            tooltip: {
+                pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
+            },
+            plotOptions: {
+                series: {
+                    dataLabels: {
+                        enabled: 'true'
+                    },
+                    stacking: 'normal'
+                }
+            },
+            series: [{ pointInterval: 30 * 24 * 3600 * 1000,
+                pointStart: <%= 9.months.ago.to_date %>, },
+                <% @manager = Manager.find_by_username current_user.username %>
+                <% @months = (9.months.ago.to_date..Date.today).map{|date| date.strftime("%m")}.uniq %>
+                <% i = 0 %>
+                <% @users = @manager.users %>
+                <% @users.each do |user| %>
+                {
+                    name: '<%= user.username %>',
+                    data: [
+                        <% @months.each do |month| %>
+                        {
+                            name: '<%= month %>',
+                            x: <%= Date::MONTHNAMES[month.to_i].to_date.strftime('%Q') %>,
+                            y: <%= Task.total_incomplete_by_user_manager(@manager, user, month) %>,
+                        }<% if month != @months.last %>, <% end %>
+                        <% end %>
+                    ]
+                }<% if user != @users.last! %>, <% end %>
+                <% i = i + 1 %>
+                <% end %>
+            ]
+        });
+    });
+</script>
+<div id = 'assigned_tasks' style="width:700px; height:300px;"></div>
+<div id = 'ongoing_tasks', style="width:700px; height:300px;"></div>
+<div id = 'completed_tasks' align="right" style="width:700px; height:300px;"></div><br>
+<div id = 'expired_tasks' style="width:700px; height:300px;"></div>

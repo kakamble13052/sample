@@ -1,0 +1,10 @@
+<%= form_for([@task, @task.employee_comments.build]) do |f| %>
+    <p>
+      <%= f.label :comment%>
+      <%= f.text_area :comment%>
+    </p>
+
+    <p>
+      <%= f.submit%>
+    </p>
+<% end %>

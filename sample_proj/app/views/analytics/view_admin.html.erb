@@ -1,0 +1,882 @@
+<script>
+  $(document).ready(function(){
+      $.datepicker.setDefaults($.datepicker.regional["in"]);
+      $.datepicker.formatDate('dd/mm/yy', new Date());
+      $('.assigned_from').datepicker({
+          onSelect: function() {
+              alert('Changing the Date');
+              $.ajax({
+                  data: { assigned_from: $(this).val(), assigned_to: $('.assigned_to').val()},
+                  type: 'post',
+                  datatype: 'json',
+                  url: '/get_months',
+                  success: function (data) {
+                      var months_a = JSON.parse(data);
+                      console.log(months_a+'\n');
+
+                  }
+              });
+              as_chart.update({
+                  series: [{
+                      pointStart: <%= $month_start.strftime('%Q') %>
+                      <% @curr_month = $month_end.strftime('%m').to_i %>
+                  },<% @managers = Manager.all %>
+                      <% i = 0 %>
+                      <% @managers.each do |manager| %>
+                      {
+                          name: '<%= manager.username %>',
+                          data: [
+                              <% $months_a.each do |month| %>
+                              {
+                                  name: '<%= month %>',
+                                  x: <%= @curr_month < month.to_i ? ((Date::MONTHNAMES[month.to_i].to_date - 1.year).strftime('%Q')) : (Date::MONTHNAMES[month.to_i].to_date.strftime('%Q')) %>,
+                                  y: <%= Task.total_assigned_by_manager(manager, month) %>,
+                                  drilldown: '<%= "#{month}_#{i}" %>'
+                              }<% if month != $months_a.last %>, <% end %>
+                              <% end %>
+                          ]
+                      }<% if manager != @managers.last! %>, <% end %>
+                      <% i = i + 1 %>
+                      <% end %>]
+              });
+              as_chart.options.drilldown.series = [<% i = 0 %>
+                  <% @managers = Manager.all %>
+                  <% @managers.each do |manager| %>
+                  <% $months_a.each do |month| %>
+                  {
+                      name: '<%= "#{month}_#{i}" %>',
+                      id: '<%= "#{month}_#{i}" %>',
+                      data: [
+                          <% @users = User.where("manager_id = ?", manager.id) %>
+                          <% @users.each do |user| %>
+                          [ '<%= user.username %>', <%= Task.total_assigned_to_user_by_manager(manager, user, month) %> ]
+                          <% if user != @users.last %>, <% end %>
+                          <% end %>
+                      ]
+                  }<% if i != 2 or (i == 2 and month != $months_a.last)  %>,<% end %>
+                  <% end %>
+                  <% i = i + 1 %>
+                  <% end %>]
+          }
+      });
+
+      $('.assigned_to').datepicker({
+          onSelect: function() {
+              alert('Changing the Date');
+              $.ajax({
+                  data: { assigned_from: $('.assigned_from').val(), assigned_to: $(this).val()},
+                  type: 'post',
+                  datatype: 'json',
+                  url: '/get_months',
+                  success: function (data) {
+                      var months_a = JSON.parse(data);
+                  }
+              });
+              as_chart.update({
+                  series: [{
+                      pointStart: <%= $month_start.strftime('%Q') %>
+                      <% @curr_month = Date.today.strftime('%m').to_i %>
+                  },<% @managers = Manager.all %>
+                      <% i = 0 %>
+                      <% @managers.each do |manager| %>
+                      {
+                          name: '<%= manager.username %>',
+                          data: [
+                              <% $months_a.each do |month| %>
+                              {
+                                  name: '<%= month %>',
+                                  x: <%= @curr_month < month.to_i ? ((Date::MONTHNAMES[month.to_i].to_date - 1.year).strftime('%Q')) : (Date::MONTHNAMES[month.to_i].to_date.strftime('%Q')) %>,
+                                  y: <%= Task.total_assigned_by_manager(manager, month) %>,
+                                  drilldown: '<%= "#{month}_#{i}" %>'
+                              }<% if month != $months_a.last %>, <% end %>
+                              <% end %>
+                          ]
+                      }<% if manager != @managers.last! %>, <% end %>
+                      <% i = i + 1 %>
+                      <% end %>]
+              });
+              as_chart.options.drilldown.series = [<% i = 0 %>
+                  <% @managers = Manager.all %>
+                  <% @managers.each do |manager| %>
+                  <% $months_a.each do |month| %>
+                  {
+                      name: '<%= "#{month}_#{i}" %>',
+                      id: '<%= "#{month}_#{i}" %>',
+                      data: [
+                          <% @users = User.where("manager_id = ?", manager.id) %>
+                          <% @users.each do |user| %>
+                          [ '<%= user.username %>', <%= Task.total_assigned_to_user_by_manager(manager, user, month) %> ]
+                          <% if user != @users.last %>, <% end %>
+                          <% end %>
+                      ]
+                  }<% if i != 2 or (i == 2 and month != $months_a.last)  %>,<% end %>
+                  <% end %>
+                  <% i = i + 1 %>
+                  <% end %>]
+          }
+      });
+      $('.ongoing_from').datepicker();
+      $('.ongoing_to').datepicker();
+      $('.completed_from').datepicker();
+      $('.completed_to').datepicker();
+      $('.expired_from').datepicker();
+      $('.expired_to').datepicker();
+      var d = new Date();
+      var three_months_ago = moment(d.setMonth(d.getMonth() - 3)).toDate();
+      $('.assigned_from').val($.datepicker.formatDate('mm/dd/yy', three_months_ago));
+      $('.ongoing_from').val($.datepicker.formatDate('mm/dd/yy', three_months_ago));
+      $('.completed_from').val($.datepicker.formatDate('mm/dd/yy',three_months_ago));
+      $('.expired_from').val($.datepicker.formatDate('mm/dd/yy', three_months_ago));
+      $('.assigned_to').val($.datepicker.formatDate('mm/dd/yy', new Date()));
+      $('.ongoing_to').val($.datepicker.formatDate('mm/dd/yy', new Date()));
+      $('.completed_to').val($.datepicker.formatDate('mm/dd/yy', new Date()));
+      $('.expired_to').val($.datepicker.formatDate('mm/dd/yy', new Date()));
+      var month_a_start;
+      var month_a_end;
+
+      $('#assigned_select').change(function(){
+          var val = this.value;
+          if(val == 0)
+          {
+              as_chart.update({
+                  <% @months_a = (3.months.ago.to_date..Date.today).map{|date| date.strftime('%m')}.uniq %>
+                  <% @curr_month = Date.today.strftime('%m').to_i %>
+                  series: [{
+                      pointStart: <%= 3.months.ago.to_date.strftime('%Q') %>
+                  },<% @managers = Manager.all %>
+                      <% i = 0 %>
+                      <% @managers.each do |manager| %>
+                      {
+                          name: '<%= manager.username %>',
+                          data: [
+                              <% @months_a.each do |month| %>
+                              {
+                                  name: '<%= month %>',
+                                  x: <%= @curr_month < month.to_i ? ((Date::MONTHNAMES[month.to_i].to_date - 1.year).strftime('%Q')) : (Date::MONTHNAMES[month.to_i].to_date.strftime('%Q'))%>,
+                                  y: <%= Task.total_assigned_by_manager(manager, month) %>,
+                                  drilldown: '<%= "#{month}_#{i}" %>'
+                              }<% if month != @months_a.last %>, <% end %>
+                              <% end %>
+                          ]
+                      }<% if manager != @managers.last! %>, <% end %>
+                      <% i = i + 1 %>
+                      <% end %>]
+              });
+          }
+          else if(val == 1)
+          {
+              as_chart.update({
+                  <% @months_a = (6.months.ago.to_date..Date.today).map{|date| date.strftime('%m')}.uniq %>
+                  series: [{
+                      pointStart: <%= 6.months.ago.to_date.strftime('%Q') %>
+                      <% @curr_month = Date.today.strftime('%m').to_i %>
+                  },<% @managers = Manager.all %>
+                      <% i = 0 %>
+                      <% @managers.each do |manager| %>
+                      {
+                          name: '<%= manager.username %>',
+                          data: [
+                              <% @months_a.each do |month| %>
+                              {
+                                  name: '<%= month %>',
+                                  x: <%= @curr_month < month.to_i ? ((Date::MONTHNAMES[month.to_i].to_date - 1.year).strftime('%Q')) : (Date::MONTHNAMES[month.to_i].to_date.strftime('%Q')) %>,
+                                  y: <%= Task.total_assigned_by_manager(manager, month) %>,
+                                  drilldown: '<%= "#{month}_#{i}" %>'
+                              }<% if month != @months_a.last %>, <% end %>
+                              <% end %>
+                          ]
+                      }<% if manager != @managers.last! %>, <% end %>
+                      <% i = i + 1 %>
+                      <% end %>]
+              });
+          }
+          else if(val == 2) {
+              as_chart.update({
+                  <% @months_a = (9.months.ago.to_date..Date.today).map{|date| date.strftime('%m')}.uniq %>
+                  series: [{
+                      pointStart: <%= 9.months.ago.to_date.strftime('%Q') %>
+                      <% @curr_month = Date.today.strftime('%m').to_i %>
+                  },
+                      <% @managers = Manager.all %>
+                      <% i = 0 %>
+                      <% @managers.each do |manager| %>
+                      {
+                          name: '<%= manager.username %>',
+                          data: [
+                              <% @months_a.each do |month| %>
+                              {
+                                  name: '<%= month %>',
+                                  x: <%= @curr_month < month.to_i ? ((Date::MONTHNAMES[month.to_i].to_date - 1.year).strftime('%Q')) : (Date::MONTHNAMES[month.to_i].to_date.strftime('%Q')) %>,
+                                  y: <%= Task.total_assigned_by_manager(manager, month) %>,
+                                  drilldown: '<%= "#{month}_#{i}" %>'
+                              }<% if month != @months_a.last %>, <% end %>
+                              <% end %>
+                          ]
+                      }<% if manager != @managers.last! %>, <% end %>
+                      <% i = i + 1 %>
+                      <% end %>]
+              });
+          }
+          as_chart.options.drilldown.series = [<% i = 0 %>
+              <% @managers = Manager.all %>
+              <% @managers.each do |manager| %>
+              <% @months_a.each do |month| %>
+              {
+                  name: '<%= "#{month}_#{i}" %>',
+                  id: '<%= "#{month}_#{i}" %>',
+                  data: [
+                      <% @users = User.where("manager_id = ?", manager.id) %>
+                      <% @users.each do |user| %>
+                      [ '<%= user.username %>', <%= Task.total_assigned_to_user_by_manager(manager, user, month) %> ]
+                      <% if user != @users.last %>, <% end %>
+                      <% end %>
+                  ]
+              }<% if i != 2 or (i == 2 and month != @months_a.last)  %>,<% end %>
+              <% end %>
+              <% i = i + 1 %>
+              <% end %>]
+      });
+
+      $('#ongoing_select').change(function(){
+          var val = this.value;
+          if(val == 0)
+          {
+              ong_chart.update({
+                  <% @months_o = (3.months.ago.to_date..Date.today).map{|date| date.strftime('%m')}.uniq %>
+                  series: [{
+                      <% @curr_month = Date.today.strftime('%m').to_i %>
+                      pointStart: <%= 3.months.ago.to_date.strftime('%Q') %>
+                  },<% @managers = Manager.all %>
+                      <% i = 0 %>
+                      <% @managers.each do |manager| %>
+                      {
+                          name: '<%= manager.username %>',
+                          data: [
+                              <% @months_o.each do |month| %>
+                              {
+                                  name: '<%= month %>',
+                                  x: <%= @curr_month < month.to_i ? ((Date::MONTHNAMES[month.to_i].to_date - 1.year).strftime('%Q')) : (Date::MONTHNAMES[month.to_i].to_date.strftime('%Q')) %>,
+                                  y: <%= Task.total_ongoing_by_manager(manager, month) %>,
+                                  drilldown: '<%= "#{month}_#{i}" %>'
+                              }<% if month != @months_o.last %>, <% end %>
+                              <% end %>
+                          ]
+                      }<% if manager != @managers.last! %>, <% end %>
+                      <% i = i + 1 %>
+                      <% end %>]
+              });
+          }
+          else if(val == 1)
+          {
+              ong_chart.update({
+                  <% @months_o = (6.months.ago.to_date..Date.today).map{|date| date.strftime('%m')}.uniq %>
+                  series: [{
+                      <% @curr_month = Date.today.strftime('%m').to_i %>
+                      pointStart: <%= 6.months.ago.to_date.strftime('%Q') %>
+                  },<% @managers = Manager.all %>
+                      <% i = 0 %>
+                      <% @managers.each do |manager| %>
+                      {
+                          name: '<%= manager.username %>',
+                          data: [
+                              <% @months_o.each do |month| %>
+                              {
+                                  name: '<%= month %>',
+                                  x: <%= @curr_month < month.to_i ? ((Date::MONTHNAMES[month.to_i].to_date - 1.year).strftime('%Q')) : (Date::MONTHNAMES[month.to_i].to_date.strftime('%Q')) %>,
+                                  y: <%= Task.total_ongoing_by_manager(manager, month) %>,
+                                  drilldown: '<%= "#{month}_#{i}" %>'
+                              }<% if month != @months_o.last %>, <% end %>
+                              <% end %>
+                          ]
+                      }<% if manager != @managers.last! %>, <% end %>
+                      <% i = i + 1 %>
+                      <% end %>]
+              });
+          }
+          else if(val == 2) {
+              ong_chart.update({
+                  <% @months_o = (9.months.ago.to_date..Date.today).map{|date| date.strftime('%m')}.uniq %>
+                  series: [{
+                      pointStart: <%= 9.months.ago.to_date.strftime('%Q') %>
+                      <% @curr_month = Date.today.strftime('%m').to_i %>
+                  },
+                      <% @managers = Manager.all %>
+                      <% i = 0 %>
+                      <% @managers.each do |manager| %>
+                      {
+                          name: '<%= manager.username %>',
+                          data: [
+                              <% @months_o.each do |month| %>
+                              {
+                                  name: '<%= month %>',
+                                  x: <%= @curr_month < month.to_i ? ((Date::MONTHNAMES[month.to_i].to_date - 1.year).strftime('%Q')) : (Date::MONTHNAMES[month.to_i].to_date.strftime('%Q')) %>,
+                                  y: <%= Task.total_ongoing_by_manager(manager, month) %>,
+                                  drilldown: '<%= "#{month}_#{i}" %>'
+                              }<% if month != @months_o.last %>, <% end %>
+                              <% end %>
+                          ]
+                      }<% if manager != @managers.last! %>, <% end %>
+                      <% i = i + 1 %>
+                      <% end %>]
+              });
+          }
+          ong_chart.options.drilldown.series = [<% i = 0 %>
+              <% @managers = Manager.all %>
+              <% @managers.each do |manager| %>
+              <% @months_o.each do |month| %>
+              {
+                  name: '<%= "#{month}_#{i}" %>',
+                  id: '<%= "#{month}_#{i}" %>',
+                  data: [
+                      <% @users = User.where("manager_id = ?", manager.id) %>
+                      <% @users.each do |user| %>
+                      [ '<%= user.username %>', <%= Task.total_ongoing_by_user_manager(manager, user, month) %> ]
+                      <% if user != @users.last %>, <% end %>
+                      <% end %>
+                  ]
+              }<% if i != 2 or (i == 2 and month != @months_o.last)  %>,<% end %>
+              <% end %>
+              <% i = i + 1 %>
+              <% end %>]
+      });
+
+      $('#completed_select').change(function(){
+          var val = this.value;
+          if(val == 0)
+          {
+              com_chart.update({
+                  <% @months_c = (3.months.ago.to_date..Date.today).map{|date| date.strftime('%m')}.uniq %>
+                  <% @curr_month = Date.today.strftime('%m').to_i %>
+                  series: [{
+                      pointStart: <%= 3.months.ago.to_date.strftime('%Q') %>
+                  },<% @managers = Manager.all %>
+                      <% i = 0 %>
+                      <% @managers.each do |manager| %>
+                      {
+                          name: '<%= manager.username %>',
+                          data: [
+                              <% @months_c.each do |month| %>
+                              {
+                                  name: '<%= month %>',
+                                  x: <%= @curr_month < month.to_i ? ((Date::MONTHNAMES[month.to_i].to_date - 1.year).strftime('%Q')) : (Date::MONTHNAMES[month.to_i].to_date.strftime('%Q')) %>,
+                                  y: <%= Task.total_completed_by_manager(manager, month) %>,
+                                  drilldown: '<%= "#{month}_#{i}" %>'
+                              }<% if month != @months_c.last %>, <% end %>
+                              <% end %>
+                          ]
+                      }<% if manager != @managers.last! %>, <% end %>
+                      <% i = i + 1 %>
+                      <% end %>]
+              });
+          }
+          else if(val == 1)
+          {
+              com_chart.update({
+                  <% @curr_month = Date.today.strftime('%m').to_i %>
+                  <% @months_c = (6.months.ago.to_date..Date.today).map{|date| date.strftime('%m')}.uniq %>
+                  series: [{
+                      pointStart: <%= 6.months.ago.to_date.strftime('%Q') %>
+                  },<% @managers = Manager.all %>
+                      <% i = 0 %>
+                      <% @managers.each do |manager| %>
+                      {
+                          name: '<%= manager.username %>',
+                          data: [
+                              <% @months_c.each do |month| %>
+                              {
+                                  name: '<%= month %>',
+                                  x: <%= @curr_month < month.to_i ? ((Date::MONTHNAMES[month.to_i].to_date - 1.year).strftime('%Q')) : (Date::MONTHNAMES[month.to_i].to_date.strftime('%Q')) %>,
+                                  y: <%= Task.total_completed_by_manager(manager, month) %>,
+                                  drilldown: '<%= "#{month}_#{i}" %>'
+                              }<% if month != @months_c.last %>, <% end %>
+                              <% end %>
+                          ]
+                      }<% if manager != @managers.last! %>, <% end %>
+                      <% i = i + 1 %>
+                      <% end %>]
+              });
+          }
+          else if(val == 2) {
+              com_chart.update({
+                  <% @months_c = (9.months.ago.to_date..Date.today).map{|date| date.strftime('%m')}.uniq %>
+                  <% @curr_month = Date.today.strftime('%m').to_i %>
+                  series: [{
+                      pointStart: <%= 9.months.ago.to_date.strftime('%Q') %>
+                  },
+                      <% @managers = Manager.all %>
+                      <% i = 0 %>
+                      <% @managers.each do |manager| %>
+                      {
+                          name: '<%= manager.username %>',
+                          data: [
+                              <% @months_c.each do |month| %>
+                              {
+                                  name: '<%= month %>',
+                                  x: <%= @curr_month < month.to_i ? ((Date::MONTHNAMES[month.to_i].to_date - 1.year).strftime('%Q')) : (Date::MONTHNAMES[month.to_i].to_date.strftime('%Q')) %>,
+                                  y: <%= Task.total_completed_by_manager(manager, month) %>,
+                                  drilldown: '<%= "#{month}_#{i}" %>'
+                              }<% if month != @months_c.last %>, <% end %>
+                              <% end %>
+                          ]
+                      }<% if manager != @managers.last! %>, <% end %>
+                      <% i = i + 1 %>
+                      <% end %>]
+              });
+          }
+          com_chart.options.drilldown.series = [<% i = 0 %>
+              <% @managers = Manager.all %>
+              <% @managers.each do |manager| %>
+              <% @months_c.each do |month| %>
+              {
+                  name: '<%= "#{month}_#{i}" %>',
+                  id: '<%= "#{month}_#{i}" %>',
+                  data: [
+                      <% @users = User.where("manager_id = ?", manager.id) %>
+                      <% @users.each do |user| %>
+                      [ '<%= user.username %>', <%= Task.total_completed_by_user_manager(manager, user, month) %> ]
+                      <% if user != @users.last %>, <% end %>
+                      <% end %>
+                  ]
+              }<% if i != 2 or (i == 2 and month != @months_c.last)  %>,<% end %>
+              <% end %>
+              <% i = i + 1 %>
+              <% end %>]
+      });
+
+      $('#expired_select').change(function(){
+          var val = this.value;
+          if(val == 0)
+          {
+              ex_chart.update({
+                  <% @months_e = (3.months.ago.to_date..Date.today).map{|date| date.strftime('%m')}.uniq %>
+                  <% @curr_month = Date.today.strftime('%m').to_i %>
+                  series: [{
+                      pointStart: <%= 3.months.ago.to_date.strftime('%Q') %>
+                  },<% @managers = Manager.all %>
+                      <% i = 0 %>
+                      <% @managers.each do |manager| %>
+                      {
+                          name: '<%= manager.username %>',
+                          data: [
+                              <% @months_e.each do |month| %>
+                              {
+                                  name: '<%= month %>',
+                                  x: <%= @curr_month < month.to_i ? ((Date::MONTHNAMES[month.to_i].to_date - 1.year).strftime('%Q')) : (Date::MONTHNAMES[month.to_i].to_date.strftime('%Q')) %>,
+                                  y: <%= Task.total_incomplete_by_manager(manager, month) %>,
+                                  drilldown: '<%= "#{month}_#{i}" %>'
+                              }<% if month != @months_e.last %>, <% end %>
+                              <% end %>
+                          ]
+                      }<% if manager != @managers.last! %>, <% end %>
+                      <% i = i + 1 %>
+                      <% end %>]
+              });
+          }
+          else if(val == 1)
+          {
+              ex_chart.update({
+                  <% @months_e = (6.months.ago.to_date..Date.today).map{|date| date.strftime('%m')}.uniq %>
+                  <% @curr_month = Date.today.strftime('%m').to_i %>
+                  series: [{
+                      pointStart: <%= 6.months.ago.to_date.strftime('%Q') %>
+                  },<% @managers = Manager.all %>
+                      <% i = 0 %>
+                      <% @managers.each do |manager| %>
+                      {
+                          name: '<%= manager.username %>',
+                          data: [
+                              <% @months_e.each do |month| %>
+                              {
+                                  name: '<%= month %>',
+                                  x: <%= @curr_month < month.to_i ? ((Date::MONTHNAMES[month.to_i].to_date - 1.year).strftime('%Q')) : (Date::MONTHNAMES[month.to_i].to_date.strftime('%Q')) %>,
+                                  y: <%= Task.total_incomplete_by_manager(manager, month) %>,
+                                  drilldown: '<%= "#{month}_#{i}" %>'
+                              }<% if month != @months_e.last %>, <% end %>
+                              <% end %>
+                          ]
+                      }<% if manager != @managers.last! %>, <% end %>
+                      <% i = i + 1 %>
+                      <% end %>]
+              });
+          }
+          else if(val == 2) {
+              ex_chart.update({
+                  <% @months_e = (9.months.ago.to_date..Date.today).map{|date| date.strftime('%m')}.uniq %>
+                  <% @curr_month = Date.today.strftime('%m').to_i %>
+                  series: [{
+                      pointStart: <%= 9.months.ago.to_date.strftime('%Q') %>
+                  },
+                      <% @managers = Manager.all %>
+                      <% i = 0 %>
+                      <% @managers.each do |manager| %>
+                      {
+                          name: '<%= manager.username %>',
+                          data: [
+                              <% @months_e.each do |month| %>
+                              {
+                                  name: '<%= month %>',
+                                  x: <%= @curr_month < month.to_i ? ((Date::MONTHNAMES[month.to_i].to_date - 1.year).strftime('%Q')) : (Date::MONTHNAMES[month.to_i].to_date.strftime('%Q')) %>,
+                                  y: <%= Task.total_incomplete_by_manager(manager, month) %>,
+                                  drilldown: '<%= "#{month}_#{i}" %>'
+                              }<% if month != @months_e.last %>, <% end %>
+                              <% end %>
+                          ]
+                      }<% if manager != @managers.last! %>, <% end %>
+                      <% i = i + 1 %>
+                      <% end %>]
+              });
+          }
+          ex_chart.options.drilldown.series = [<% i = 0 %>
+              <% @managers = Manager.all %>
+              <% @managers.each do |manager| %>
+              <% @months_e.each do |month| %>
+              {
+                  name: '<%= "#{month}_#{i}" %>',
+                  id: '<%= "#{month}_#{i}" %>',
+                  data: [
+                      <% @users = User.where("manager_id = ?", manager.id) %>
+                      <% @users.each do |user| %>
+                      [ '<%= user.username %>', <%= Task.total_incomplete_by_user_manager(manager, user, month) %> ]
+                      <% if user != @users.last %>, <% end %>
+                      <% end %>
+                  ]
+              }<% if i != 2 or (i == 2 and month != @months_e.last)  %>,<% end %>
+              <% end %>
+              <% i = i + 1 %>
+              <% end %>]
+      });
+
+      Highcharts.setOptions({
+          global: {
+              timezone: 'Asia/Kolkata'
+          }
+      });
+      var as_chart = new Highcharts.chart('assigned_tasks', {
+          chart: {
+              type: 'column'
+          },
+          title: {
+              text: 'Assigned Tasks'
+          },
+          xAxis: [{
+              type: 'datetime',
+              minRange: 1 * 5
+          }],
+          yAxis: [{
+              min: 0,
+              minTickInterval: 1,
+              title: {
+                  text: 'Tasks'
+              }
+          }],
+          tooltip: {
+              pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
+          },
+          plotOptions: {
+              series: {
+                  dataLabels: {
+                      enabled: 'true'
+                  },
+                  stacking: 'normal'
+              }
+          },
+          series: [{ pointInterval: 30 * 24 * 3600 * 1000,
+              pointStart: new Date($('.assigned_from').val()).getTime() },
+              <% @managers = Manager.all %>
+              <% @curr_month = Date.today.strftime('%m').to_i %>
+              <% @months_a = (3.months.ago.to_date..Date.today).map{|date| date.strftime('%m')}.uniq %>
+              <% i = 0 %>
+              <% @managers.each do |manager| %>
+                {
+                    name: '<%= manager.username %>',
+                    data: [
+                        <% @months_a.each do |month| %>
+                        {
+                            name: '<%= month %>',
+                            x: <%= @curr_month < month.to_i ? ((Date::MONTHNAMES[month.to_i].to_date - 1.year).strftime('%Q')) : (Date::MONTHNAMES[month.to_i].to_date.strftime('%Q')) %>,
+                            y: <%= Task.total_assigned_by_manager(manager, month) %>,
+                            drilldown: '<%= "#{month}_#{i}" %>'
+                        }<% if month != @months_a.last %>, <% end %>
+                        <% end %>
+                    ]
+                }<% if manager != @managers.last! %>, <% end %>
+              <% i = i + 1 %>
+              <% end %>
+          ],
+          drilldown: {
+              series: [
+                  <% i = 0 %>
+                  <% @managers = Manager.all %>
+                  <% @managers.each do |manager| %>
+                    <% @months_a.each do |month| %>
+                      {
+                          name: '<%= "#{month}_#{i}" %>',
+                          id: '<%= "#{month}_#{i}" %>',
+                          data: [
+                              <% @users = User.where("manager_id = ?", manager.id) %>
+                              <% @users.each do |user| %>
+                              [ '<%= user.username %>', <%= Task.total_assigned_to_user_by_manager(manager, user, month) %> ]
+                              <% if user != @users.last %>, <% end %>
+                              <% end %>
+                          ]
+                      }<% if i != 2 or (i == 2 and month != @months_a.last)  %>,<% end %>
+                  <% end %>
+                  <% i = i + 1 %>
+                  <% end %>
+          ]
+          }
+      });
+
+      var ong_chart = new Highcharts.chart('ongoing_tasks', {
+          chart: {
+              type: 'column'
+          },
+          title: {
+              text: 'Ongoing Tasks'
+          },
+          xAxis: [{
+              type: 'datetime',
+              minRange: 1 * 5
+          }],
+          yAxis: [{
+              min: 0,
+              minTickInterval: 1,
+              title: {
+                  text: 'Tasks'
+              }
+          }],
+          tooltip: {
+              pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
+          },
+          plotOptions: {
+              series: {
+                  dataLabels: {
+                      enabled: 'true'
+                  },
+                  stacking: 'normal'
+              }
+          },
+          series: [{ pointInterval: 30 * 24 * 3600 * 1000,
+              pointStart: <%= 9.months.ago.to_date %> },
+              <% @managers = Manager.all %>
+              <% @curr_month = Date.today.strftime('%m').to_i %>
+              <% @months = (3.months.ago.to_date..Date.today).map{|date| date.strftime("%m")}.uniq %>
+              <% i = 0 %>
+              <% @managers.each do |manager| %>
+              {
+                  name: '<%= manager.username %>',
+                  data: [
+                      <% @months.each do |month| %>
+                      {
+                          name: '<%= month %>',
+                          x: <%= @curr_month < month.to_i ? ((Date::MONTHNAMES[month.to_i].to_date - 1.year).strftime('%Q')) : (Date::MONTHNAMES[month.to_i].to_date.strftime('%Q')) %>,
+                          y: <%= Task.total_ongoing_by_manager(manager, month) %>,
+                          drilldown: '<%= "#{month}_#{i}" %>'
+                      }<% if month != @months.last %>, <% end %>
+                      <% end %>
+                  ]
+              }<% if manager != @managers.last! %>, <% end %>
+              <% i = i + 1 %>
+              <% end %>
+          ],
+          drilldown: {
+              series: [
+                  <% i = 0 %>
+                  <% @managers = Manager.all %>
+                  <% @managers.each do |manager| %>
+                  <% @months.each do |month| %>
+                  {
+                      name: '<%= "#{month}_#{i}" %>',
+                      id: '<%= "#{month}_#{i}" %>',
+                      data: [
+                          <% @users = User.where("manager_id = ?", manager.id) %>
+                          <% @users.each do |user| %>
+                          [ '<%= user.username %>', <%= Task.total_ongoing_by_user_manager(manager, user, month) %> ]
+                          <% if user != @users.last %>, <% end %>
+                          <% end %>
+                      ]
+                  }<% if i != 2 or (i == 2 and month != @months.last)  %>,<% end %>
+                  <% end %>
+                  <% i = i + 1 %>
+                  <% end %>
+              ]
+          }
+      });
+
+      var com_chart = new Highcharts.chart('completed_tasks', {
+          chart: {
+              type: 'column'
+          },
+          title: {
+              text: 'Completed Tasks'
+          },
+          xAxis: [{
+              type: 'datetime',
+              minRange: 1 * 5
+          }],
+          yAxis: [{
+              tickInterval: 0,
+              minTickInterval: 1,
+              title: {
+                  text: 'Tasks'
+              }
+          }],
+          tooltip: {
+              pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
+          },
+          plotOptions: {
+              series: {
+                  dataLabels: {
+                      enabled: 'true'
+                  },
+                  stacking: 'normal'
+              }
+          },
+          series: [{ pointInterval: 1 * 24 * 3600 * 1000,
+              pointStart: <%= 9.months.ago.to_date %> },
+              <% @managers = Manager.all %>
+              <% @months = (3.months.ago.to_date..Date.today).map{|date| date.strftime("%m")}.uniq %>
+              <% i = 0 %>
+              <% @curr_month = Date.today.strftime('%m').to_i %>
+              <% @managers.each do |manager| %>
+              {
+                  name: '<%= manager.username %>',
+                  data: [
+                      <% @months.each do |month| %>
+                      {
+                          name: '<%= month %>',
+                          x: <%= @curr_month < month.to_i ? ((Date::MONTHNAMES[month.to_i].to_date - 1.year).strftime('%Q')) : (Date::MONTHNAMES[month.to_i].to_date.strftime('%Q')) %>,
+                          y: <%= Task.total_completed_by_manager(manager, month) %>,
+                          drilldown: '<%= "#{month}_#{i}" %>'
+                      }<% if month != @months.last %>, <% end %>
+                      <% end %>
+                  ]
+              }<% if manager != @managers.last! %>, <% end %>
+              <% i = i + 1 %>
+              <% end %>
+          ],
+          drilldown: {
+              series: [
+                  <% i = 0 %>
+                  <% @managers = Manager.all %>
+                  <% @managers.each do |manager| %>
+                  <% @months.each do |month| %>
+                  {
+                      name: '<%= "#{month}_#{i}" %>',
+                      id: '<%= "#{month}_#{i}" %>',
+                      data: [
+                          <% @users = User.where("manager_id = ?", manager.id) %>
+                          <% @users.each do |user| %>
+                          [ '<%= user.username %>', <%= Task.total_completed_by_user_manager(manager, user, month) %> ]
+                          <% if user != @users.last %>, <% end %>
+                          <% end %>
+                      ]
+                  }<% if i != 2 or (i == 2 and month != @months.last)  %>,<% end %>
+                  <% end %>
+                  <% i = i + 1 %>
+                  <% end %>
+              ]
+          }
+      });
+
+      var ex_chart = new Highcharts.chart('expired_tasks', {
+          chart: {
+              type: 'column'
+          },
+          title: {
+              text: 'Expired Tasks'
+          },
+          xAxis: [{
+              type: 'datetime',
+              minRange: 1 * 5
+          }],
+          yAxis: [{
+              min: 0,
+              title: {
+                  text: 'Tasks'
+              }
+          }],
+          tooltip: {
+              pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
+          },
+          plotOptions: {
+              series: {
+                  dataLabels: {
+                      enabled: 'true'
+                  },
+                  stacking: 'normal'
+              }
+          },
+          series: [{ pointInterval: 30 * 24 * 3600 * 1000,
+              pointStart: <%= 9.months.ago.to_date %> },
+              <% @managers = Manager.all %>
+              <% @months = (3.months.ago.to_date..Date.today).map{|date| date.strftime("%m")}.uniq %>
+              <% i = 0 %>
+              <% @curr_month = Date.today.strftime('%m').to_i %>
+              <% @managers.each do |manager| %>
+              {
+                  name: '<%= manager.username %>',
+                  data: [
+                      <% @months.each do |month| %>
+                      {
+                          name: '<%= month %>',
+                          x: <%= @curr_month < month.to_i ? ((Date::MONTHNAMES[month.to_i].to_date - 1.year).strftime('%Q')) : (Date::MONTHNAMES[month.to_i].to_date.strftime('%Q')) %>,
+                          y: <%= Task.total_incomplete_by_manager(manager, month) %>,
+                          drilldown: '<%= "#{month}_#{i}" %>'
+                      }<% if month != @months.last %>, <% end %>
+                      <% end %>
+                  ]
+              }<% if manager != @managers.last! %>, <% end %>
+              <% i = i + 1 %>
+              <% end %>
+          ],
+          drilldown: {
+              series: [
+                  <% i = 0 %>
+                  <% @managers = Manager.all %>
+                  <% @managers.each do |manager| %>
+                  <% @months.each do |month| %>
+                  {
+                      name: '<%= "#{month}_#{i}" %>',
+                      id: '<%= "#{month}_#{i}" %>',
+                      data: [
+                          <% @users = User.where("manager_id = ?", manager.id) %>
+                          <% @users.each do |user| %>
+                          [ '<%= user.username %>', <%= Task.total_incomplete_by_user_manager(manager, user, month) %> ]
+                          <% if user != @users.last %>, <% end %>
+                          <% end %>
+                      ]
+                  }<% if i != 2 or (i == 2 and month != @months.last)  %>,<% end %>
+                  <% end %>
+                  <% i = i + 1 %>
+                  <% end %>
+              ]
+          }
+      });
+  });
+</script>
+<%= link_to 'Back', root_path %><br />
+<%= label_tag 'From: ' %>
+<%= text_field_tag 'as_fr', nil, class: "assigned_from" %>
+<%= label_tag 'To: ' %>
+<%= text_field_tag 'as_to', nil, class: "assigned_to" %>
+<%= select_tag 'assigned_select', options_for_select(@month_names.collect{ |m| [m, @month_names.index(m)]}) %>
+<div id = 'assigned_tasks' style="width:800px; height:300px;"></div>
+<%= label_tag 'From: ' %>
+<%= text_field_tag 'on_fr', nil, class: "ongoing_from"%>
+<%= label_tag 'To: ' %>
+<%= text_field_tag 'on_to', nil, class: "ongoing_to"%>
+<%= select_tag 'ongoing_select', options_for_select(@month_names.collect{ |m| [m, @month_names.index(m)]}) %>
+<div id = 'ongoing_tasks' style="width:800px; height:300px;"></div>
+<%= label_tag 'From: ' %>
+<%= text_field_tag 'co_fr', nil, class: "completed_from"%>
+<%= label_tag 'To: ' %>
+<%= text_field_tag 'co_to', nil, class: "completed_to"%>
+<%= select_tag 'completed_select', options_for_select(@month_names.collect{ |m| [m, @month_names.index(m)]}) %>
+<div id = 'completed_tasks' style="width:800px; height:300px;"></div><br>
+<%= label_tag 'From: ' %>
+<%= text_field_tag 'ex_fr', nil, class: "expired_from"%>
+<%= label_tag 'To: ' %>
+<%= text_field_tag 'ex_fr', nil, class: "expired_to"%>
+<%= select_tag 'expired_select', options_for_select(@month_names.collect{ |m| [m, @month_names.index(m)]}) %>
+<div id = 'expired_tasks' style="width:800px; height:300px;"></div>

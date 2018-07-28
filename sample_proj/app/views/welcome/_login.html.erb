@@ -1,0 +1,5 @@
+<h4>Welcome <%= current_user.username if current_user %></h4>
+<p>
+<%= link_to 'View Tasks', tasks_path%><br>
+<%= link_to 'View Analytics', view_employee_analytics_path %>
+</p>

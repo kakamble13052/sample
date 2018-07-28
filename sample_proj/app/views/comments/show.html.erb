@@ -1,0 +1,7 @@
+<p>
+  <strong>Author:</strong><br>
+  <%= @comment.user.email%><br>
+  <strong>Comment:</strong><br>
+  <%= @comment.comment %><br>
+</p>
+<%= link_to 'Back', article_path(@article) %>

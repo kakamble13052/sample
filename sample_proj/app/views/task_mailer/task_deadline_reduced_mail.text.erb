@@ -1,0 +1,16 @@
+Hey <%= @user.username %>,
+
+This is to inform you that your deadline for your task with description '<%= @task.desc %>' has been reduced from
+
+<%= @prev_deadline.strftime("%d/%m/%y, %H:%M %Z") %>
+
+to
+
+<%= @task.due_date.strftime("%d/%m/%y, %H:%M %Z") %>
+
+Be sure to complete the task on time!
+
+With Regards,
+Admin
+
+PS: This is an automail, so please do not reply

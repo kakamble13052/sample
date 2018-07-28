@@ -1,0 +1,9 @@
+<h1>Welcome to Task Creator</h1>
+<% #send_deadline_expired_mail %>
+<% if user_signed_in? %>
+    <%= check_for_user_role current_user %>
+    <%= link_to 'Sign Out', destroy_user_session_path, method: :delete %><br>
+<% else %>
+    <%= link_to 'Sign In', new_user_session_path %><br>
+    <%= link_to 'Sign Up', new_user_registration_path %><br>
+<% end %>

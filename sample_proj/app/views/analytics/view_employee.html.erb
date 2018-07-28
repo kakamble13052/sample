@@ -1,0 +1,99 @@
+<script>
+    $(document).ready(function(){
+        Highcharts.setOptions({
+           global: {
+               timezone: 'Asia/Kolkata'
+           }
+        });
+        new Highcharts.chart('assigned_tasks', {
+            chart: {
+              type: 'column'
+            },
+            title: {
+                text: 'Assigned Tasks'
+            },
+            xAxis: [{
+                type: 'datetime',
+                minRange: 24 * 3600 * 1000
+            }],
+            yAxis: [{
+                tickInterval: 0,
+                minTickInterval: 1,
+                title: {
+                    text: 'Tasks'
+                }
+            }],
+            series: [{
+                pointInterval: 30 * 24 * 3600 * 1000,
+                pointStart: <%= 9.months.ago.to_date %>,
+                <% @months = (9.months.ago.to_date..Date.today).map {|date| date.strftime("%m")}.uniq %>
+                <% @no_of_tasks = Array.new %>
+                <% @months.each do |month| %>
+                  <% @no_of_tasks << Task.total_assigned_user_tasks(current_user.id, month) %>
+                <% end %>
+                data: <%= @no_of_tasks %>
+            }]
+        });
+
+        new Highcharts.chart('completed_tasks', {
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Completed Tasks'
+            },
+            xAxis: [{
+                type: 'datetime',
+                minRange: 24 * 3600 * 1000
+            }],
+            yAxis: [{
+                tickInterval: 0,
+                minTickInterval: 1,
+                title: {
+                    text: 'Tasks'
+                }
+            }],
+            series: [{
+                pointInterval: 30 * 24 * 3600 * 1000,
+                pointStart: <%= 9.months.ago.to_date %>,
+                <% @months = (9.months.ago.to_date..Date.today).map {|date| date.strftime("%m")}.uniq %>
+                <% @no_of_tasks = Array.new %>
+                <% @months.each do |month| %>
+                  <% @no_of_tasks << Task.total_completed_user_tasks(current_user.id, month) %>
+                <% end %>
+                data: <%= @no_of_tasks %>
+            }]
+        });
+
+        new Highcharts.chart('expired_tasks', {
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Expired Tasks'
+            },
+            xAxis: [{
+                type: 'datetime',
+                minRange: 24 * 3600 * 1000
+            }],
+            yAxis: [{
+                title: {
+                    text: 'Tasks'
+                }
+            }],
+            series: [{
+                pointInterval: 30 * 24 * 3600 * 1000,
+                pointStart: <%= 9.months.ago.to_date %>,
+                <% @months = (9.months.ago.to_date..Date.today).map {|date| date.strftime("%m")}.uniq %>
+                <% @no_of_tasks = Array.new %>
+                <% @months.each do |month| %>
+                  <% @no_of_tasks << Task.total_incomplete_user_tasks(current_user.id, month) %>
+                <% end %>
+                data: <%= @no_of_tasks %>
+            }]
+        });
+    });
+</script>
+<div id = 'assigned_tasks' style="width:440px; height:300px;"></div>
+<div id = 'completed_tasks' align="right" style="width:440px; height:300px;"></div><br>
+<div id = 'expired_tasks' style="width:440px; height:300px;"></div>

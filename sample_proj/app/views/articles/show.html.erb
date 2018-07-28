@@ -1,0 +1,37 @@
+<p>
+  <strong>Title:</strong>
+  <%= @article.title %>
+</p>
+
+<p>
+  <strong>Body:</strong>
+  <%= @article.body %>
+</p>
+
+<p>
+  <strong>Author:</strong>
+  <%= @article.user.email%>
+</p>
+
+<p>
+  <strong> Comments </strong>
+  <% @article.comments.all.each do |comment|%>
+    <p>
+      <strong>Author:</strong><br>
+      <%= comment.user.email%><br>
+      <strong>Comment:</strong><br>
+      <%= comment.comment %><br>
+      <% if comment.user == current_user%>
+        <%= link_to 'Delete', article_comment_path(@article, comment),
+                    method: :delete,
+                    data: {confirm: 'Are you sure?'} %>
+      <% end %>
+    </p>
+  <% end %>
+</p>
+
+<p>
+  <%=render 'comments/new' %>
+</p>
+
+<%= link_to 'Back', articles_path %>

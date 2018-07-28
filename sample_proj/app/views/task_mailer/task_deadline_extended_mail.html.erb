@@ -1,0 +1,23 @@
+<h4>Hey <%= @user.username %>,</h4>
+<p>
+  This is to notify you that your deadline for task with description '<%= @task.desc %>' has been extended from
+  <p>
+    <h3> <%= @prev_deadline.strftime("%d/%m/%y, %H:%M %Z") %> </h3>
+  </p>
+  <p>
+    to
+  </p>
+  <p>
+    <h3> <%= @task.due_date.strftime("%d/%m/%y, %H:%M %Z") %> </h3>
+  </p>
+  <p>
+    Be sure to complete the task on time!
+  </p>
+  <p>
+    With Regards,<br>
+    Admin
+  </p>
+  <p>
+    PS: This is an automail, so do not reply
+  </p>
+</p>

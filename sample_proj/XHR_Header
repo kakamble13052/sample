@@ -1,0 +1,19 @@
+POST /get_months HTTP/1.1
+Host: localhost:3000
+Connection: keep-alive
+Content-Length: 55
+Origin: http://localhost:3000
+X-CSRF-Token: 2K1JGIbFqJYdTSmROcSntT+MEolPoUcClV8W0lW0mie3Y3gfcQtK8dh82mOU/wn0Pr7oDIkTxH8tVS2M4jxVVg==
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/60.0.3112.78 Chrome/60.0.3112.78 Safari/537.36
+Content-Type: application/x-www-form-urlencoded; charset=UTF-8
+Accept: */*
+X-Requested-With: XMLHttpRequest
+Referer: http://localhost:3000/view_admin_analytics
+Accept-Encoding: gzip, deflate, br
+Accept-Language: en-US,en;q=0.8
+Cookie: _equake_proj_session=YnRnSmE2bTN0QjJTU0lNVVRYOEN2YVllbktMMTY3WkUxa05MYnRJQ25tUDZQSHBpbXJocDRaZ1JPdWJpMFg5RFJYYUJjbjZTZWtBR0NGWktCSjRkSDBDanZWMnUycXEvVXVVMDVrOEl3aVJNbjFLRnZWKytSL0ZwSUZQU09ibmFhTjh4YVdHSVJhVmVJeU9SN1dRcE5RPT0tLTEvVnBhWXc4d3JreFJicVBEOWtWS3c9PQ%3D%3D--81b412247c6253b7fd5c23dafa99ed8319d33b9d; GUID=rTNKzXQII5oDxYxn9yXv; _sample_proj_session=L0J6bkZSY21OVzFxUk81a2E1UWVwbllOMVVPTk9OR2VPcUhhQmdKb1dnejlyV0hOSmRpbHBuRmFLanBPVFMwcFNXeXpuVUU3Z1lkbzUvbWhqWFkzcDV6ak02Y0w1TFMraVhVWDFNOGNZUE5FOGNwSE43ZDU5ZGtCQnhGNGlXSGtFbm5wZ0ZJNnRrL2xuckdiNkNkNHlVSW9rWHJ2MkRxZUtzZ2lCanVlT3k0eUE1ZThBUnNNZ2xrazBzZXdSWHdqeFFUcXVwNmcyNnhaTUUzd0JoSFZ4L1prMVZKN25Cckx4aFZkUDVRL0VSTT0tLTZHbkxEdWNoQUFrVXRFNDRHNHJCN2c9PQ%3D%3D--1cb044b55775b94dddafef106aadc3def292734e
+
+
+
+
+

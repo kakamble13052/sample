@@ -1,0 +1,11 @@
+<%= form_tag(use_route: assign_manager_to_user_path, method: 'post') do %>
+    <p>
+      <strong>Manager:</strong>
+      <%= collection_select :manager, :manager_id, Manager.all, :id, :username %>
+    </p>
+    <p>
+      <strong>User:</strong>
+      <%= collection_select :user, :user_id, User.where(admin: false, manager_bool: false), :id, :username %>
+    </p>
+    <%= submit_tag('Assign') %>
+<% end %>

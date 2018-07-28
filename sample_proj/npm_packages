@@ -1,0 +1,15 @@
+# Browserify is required.
+# You can install it globally and delete from here.
+#npm 'browserify', require: false, development: true
+
+# Add some npm packages
+
+#npm 'highcharts', development:true
+
+#npm 'moment', development:true
+
+#npm 'moment-timezone', development:true
+
+npm 'lodash', development:true
+
+npm 'underscore', development:true

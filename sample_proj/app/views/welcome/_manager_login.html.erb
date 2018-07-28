@@ -1,0 +1,9 @@
+<h4>Welcome Manager <%= current_user.username if current_user %></h4>
+<p>
+  <%= link_to 'New Self Task', new_self_task_path(:assignee_id => current_user.id)%><br>
+  <%= link_to 'New User Task', new_task_path%><br>
+  <%= link_to 'All Tasks', tasks_path%><br>
+  <%= link_to 'All Users', show_users_path %><br>
+  <%= link_to 'Archived Tasks', archived_tasks_path %><br>
+  <%= link_to 'View Analytics', view_manager_analytics_path %>
+</p>

@@ -1,0 +1,16 @@
+Hey <%= @user.username %>,
+
+You have been assigned a task:
+
+Description: '<%= @task.desc %>'
+Deadline: <%= @task.due_date.strftime("%d/%m/%y, %H:%M %Z") %>
+Assigned by: <%= @user_2.username %>
+
+View the task <%= link_to 'here', task_url(@task) %>
+
+Be sure to complete it on time!
+
+With Regards,
+Admin
+
+PS: This is an automail, so please do not reply

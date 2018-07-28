@@ -1,0 +1,59 @@
+<% #send_deadline_expired_mail %>
+<p>
+  <strong>Description:</strong>
+  <%= @task.desc %>
+</p>
+
+<p>
+  <strong>Due date:</strong>
+  <%= @task.due_date %>
+</p>
+
+<p>
+  <strong>Completed:</strong>
+  <%= check_for_user @task, current_user.id%>
+</p>
+
+<p>
+  <%= link_to 'Back', tasks_path %>
+</p>
+
+<p>
+  <strong> Comments </strong>
+  <% @task.employee_comments.all.each do |employee_comment|%>
+    <p>
+      <strong>Author:</strong><br>
+      <%= employee_comment.user.username%><br>
+      <strong>Comment:</strong><br>
+      <%= employee_comment.comment %><br>
+      <%= check_for_destroy_comment @task, employee_comment %>
+    </p>
+<% end %>
+</p>
+
+<p>
+  <%= render 'employee_comments/new' if @task.assignee_id == current_user.id %>
+</p>
+
+<script>
+//  $(document).ready(function(){
+      $('.send_a_mail').click(function()
+      {
+          confirm('Are you sure you have completed the task?');
+          var checked;
+          task_id = $(this).data('task.id');
+          if ($(this).is(':checked')) {
+              checked = true;
+              $(this).disabled(true)
+          } else {
+              checked = false;
+          }
+//          $.ajax({
+//              type: "POST",
+//              url: "/send_mail/"+ task_id,
+//              dataType: "js",
+//              data: {id: task_id, checked: checked}
+//          });
+      });
+//  });
+</script>

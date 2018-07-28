@@ -1,0 +1,13 @@
+{
+  "name": "sample_proj",
+  "private": true,
+  "dependencies": {
+    "browserify": "^14.4.0",
+    "highcharts": "^5.0.14",
+    "lodash": "^4.17.4",
+    "lodash.range": "^3.2.0",
+    "moment": "^2.18.1",
+    "moment-timezone": "^0.5.13",
+    "underscore": "^1.8.3"
+  }
+}
